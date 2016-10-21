@@ -95,9 +95,19 @@ let rec gen_expression : expression -> Llvm.llvalue = function
 			Llvm.build_call fn args  "functioncall" builder
 
 
-let rec gen_statement : statement ->  Llvm.llbasicblock  = function
-  | Assign (lhs,e) -> raise TODO
-  | _ -> raise TODO
+let rec gen_statement : statement ->  Llvm.llvalue  = function
+  | Assign (l,e) ->  begin match l with	      
+			   | LHS_Ident (id) -> Llvm.build_store (gen_expression e) (SymbolTableList.lookup id) builder
+			   | LHS_ArrayElem (id,expr) -> raise TODO
+		     end
+  | Return (expr) -> raise TODO
+  | SCall (id, exprarray) -> raise TODO
+  | Print (itemlist) -> raise TODO
+  | Read (itemlist)  -> raise TODO
+  | Block (decl, statementlist) -> raise TODO
+  | If (expr, stmt, stmtoption) -> raise TODO
+  | While (expr,stmt) -> raise TODO
+
 
 (* function that turns the code generated for an expression into a valid LLVM code *)
 let gen (e : expression) : unit =
