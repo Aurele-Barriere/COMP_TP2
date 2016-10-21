@@ -84,7 +84,10 @@ let rec gen_expression : expression -> Llvm.llvalue = function
       let t1 = gen_expression e1 in
       let t2 = gen_expression e2 in
       Llvm.build_mul t1 t2 "mul" builder
-  | Div (e1,e2) -> raise TODO
+  | Div (e1,e2) -> 
+      let t1 = gen_expression e1 in
+      let t2 = gen_expression e2 in
+      Llvm.build_udiv t1 t2 "div" builder
   | Expr_Ident(id) -> raise TODO
   | ArrayElem (id,e) -> raise TODO
   | ECall (id,array) -> raise TODO
