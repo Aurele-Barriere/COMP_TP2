@@ -67,33 +67,37 @@ let create_entry_block_array_alloca the_function var_name typ size =
 
 let rec gen_expression : expression -> Llvm.llvalue = function
   | Const n ->
-      const_int n
-        (* returns a constant llvalue for that integer *)
+     const_int n
+  (* returns a constant llvalue for that integer *)
   | Plus (e1,e2) ->
-      let t1 = gen_expression e1 in
+     let t1 = gen_expression e1 in
         (* generates the code for [e1] and returns the result llvalue *)
-      let t2 = gen_expression e2 in
+     let t2 = gen_expression e2 in
         (* the same for e2 *)
-      Llvm.build_add t1 t2 "plus" builder
-   (* appends an 'add' instruction and returns the result llvalue *)
+     Llvm.build_add t1 t2 "plus" builder
+  (* appends an 'add' instruction and returns the result llvalue *)
   | Minus (e1,e2) -> 
-      let t1 = gen_expression e1 in
-      let t2 = gen_expression e2 in
-      Llvm.build_sub t1 t2 "minus" builder
+     let t1 = gen_expression e1 in
+     let t2 = gen_expression e2 in
+     Llvm.build_sub t1 t2 "minus" builder
   | Mul (e1,e2) ->
-      let t1 = gen_expression e1 in
+     let t1 = gen_expression e1 in
       let t2 = gen_expression e2 in
       Llvm.build_mul t1 t2 "mul" builder
   | Div (e1,e2) -> 
-      let t1 = gen_expression e1 in
-      let t2 = gen_expression e2 in
-      Llvm.build_udiv t1 t2 "div" builder
-  | Expr_Ident(id) -> raise TODO
+     let t1 = gen_expression e1 in
+     let t2 = gen_expression e2 in
+     Llvm.build_sdiv t1 t2 "div" builder
+  | Expr_Ident(id) ->  SymbolTableList.lookup id
   | ArrayElem (id,e) -> raise TODO
-  | ECall (id,array) -> raise TODO
+  | ECall (id,array) -> let fn = SymbolTableList.lookup id in
+			let args = Array.map (gen_expression) array in
+			Llvm.build_call fn args  "functioncall" builder
 
 
-
+let rec gen_statement : statement ->  Llvm.llbasicblock  = function
+  | Assign (lhs,e) -> raise TODO
+  | _ -> raise TODO
 
 (* function that turns the code generated for an expression into a valid LLVM code *)
 let gen (e : expression) : unit =
