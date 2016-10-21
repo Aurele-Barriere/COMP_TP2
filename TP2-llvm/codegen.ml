@@ -75,8 +75,19 @@ let rec gen_expression : expression -> Llvm.llvalue = function
       let t2 = gen_expression e2 in
         (* the same for e2 *)
       Llvm.build_add t1 t2 "plus" builder
-	(* appends an 'add' instruction and returns the result llvalue *)
-  | _ -> raise TODO
+   (* appends an 'add' instruction and returns the result llvalue *)
+  | Minus (e1,e2) -> 
+      let t1 = gen_expression e1 in
+      let t2 = gen_expression e2 in
+      Llvm.build_sub t1 t2 "minus" builder
+  | Mul (e1,e2) -> raise TODO
+  | Div (e1,e2) -> raise TODO
+  | Expr_Ident(id) -> raise TODO
+  | ArrayElem (id,e) -> raise TODO
+  | ECall (id,array) -> raise TODO
+
+
+
 
 (* function that turns the code generated for an expression into a valid LLVM code *)
 let gen (e : expression) : unit =
