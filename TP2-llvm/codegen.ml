@@ -92,7 +92,7 @@ let rec gen_expression : expression -> Llvm.llvalue = function
   | ArrayElem (id,e) -> raise TODO
   | ECall (id,array) -> let fn = SymbolTableList.lookup id in
 			let args = Array.map (gen_expression) array in
-			Llvm.build_call fn args  "functioncall" builder
+			Llvm.build_call fn args  id builder
 
 let gen_decl_item di the_function: unit =
   match di with
@@ -119,7 +119,22 @@ let rec gen_statement (f:Llvm.llvalue) (s:statement): unit  =
      gen_decl decl f;
      List.iter (gen_statement f) statementlist;
      SymbolTableList.close_scope()
-    | If (expr, stmt, stmtoption) -> raise TODO
+    | If (expr, stmt, stmtoption) ->
+       let l = Llvm.build_icmp (Icmp.Ne) (gen_expression expr) (const_int 0) "icmp" builder in
+       let tbb = Llvm.append_block context "then" f in
+       let fbb = Llvm.append_block context "else" f in
+       let endbb = Llvm.append_block context "end" f in
+       Llvm.build_cond_br (l) tbb fbb builder;
+       label tbb;
+       gen_statement f stmt;
+       match stmtoption with
+       | None -> ()
+       | Some (s) -> gen_statement f s
+       
+(*       create label tbb
+	      gen_statement stmt
+ *)
+       
     | While (expr,stmt) -> raise TODO
 				 
 
