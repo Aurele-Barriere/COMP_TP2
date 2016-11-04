@@ -95,9 +95,9 @@ let rec gen_expression : expression -> Llvm.llvalue = function
 			Llvm.build_call fn args  "functioncall" builder
 
 
-let rec gen_statement : statement ->  Llvm.llvalue  = function
+let rec gen_statement : statement -> unit  = function
   | Assign (l,e) ->  begin match l with	      
-			   | LHS_Ident (id) -> Llvm.build_store (gen_expression e) (SymbolTableList.lookup id) builder
+			   | LHS_Ident (id) -> ignore (Llvm.build_store (gen_expression e) (SymbolTableList.lookup id) builder)
 			   | LHS_ArrayElem (id,expr) -> raise TODO
 		     end
   | Return (expr) -> raise TODO
@@ -110,9 +110,13 @@ let rec gen_statement : statement ->  Llvm.llvalue  = function
 
 
 (* function that turns the code generated for an expression into a valid LLVM code *)
-let gen (e : expression) : unit =
+let gen (s : statement) : unit =
   let the_function = Llvm.declare_function "main" (Llvm.function_type int_type [||]) the_module in
   let bb = Llvm.append_block context "entry" the_function in
   Llvm.position_at_end bb builder;
-  let x = gen_expression e in
-  ignore (Llvm.build_ret x builder)
+  SymbolTableList.open_scope();
+  SymbolTableList.add "i" (create_entry_block_alloca the_function "i" int_type);
+  gen_statement s;
+  ignore(Llvm.build_ret (const_int 0) builder) (* returns 0 *)
+  (* let x = gen_statement s in
+  ignore (Llvm.build_ret x builder) *) (* for expressions that returned llvalues *)

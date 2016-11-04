@@ -38,7 +38,7 @@ let main ch =
   let the_execution_engine = create_execution_engine () in
   let the_pm = create_pass_manager the_execution_engine in
   (* parsing *)
-  let ast = Parser.parse_channel Parser.expression ch in (* to be replaced with parse_statement or something like it. for now, just expressions *)
+  let ast = Parser.parse_channel Parser.statement ch in (* to be replaced with parse_statement or something like it. for now, just expressions *)
     (* NOTE: replace Parser.expression by Parser.statement then by Parser.program according to your progression. *)
   (* code generation *)
   Codegen.gen ast;
