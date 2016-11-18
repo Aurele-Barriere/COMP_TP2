@@ -129,9 +129,11 @@ let rec gen_statement (f:Llvm.llvalue) (s:statement): unit  =
        Llvm.build_cond_br (l) tbb fbb builder;
        Llvm.position_at_end tbb builder;
        gen_statement f stmt;
+       ignore (Llvm.build_br endbb builder);
        begin match stmtoption with 
 	     | None -> ()
-	     | Some (s) -> Llvm.position_at_end fbb builder;  gen_statement f s end;
+	     | Some (s) -> Llvm.position_at_end fbb builder;  gen_statement f s; ignore (Llvm.build_br endbb builder);
+       end;
        Llvm.position_at_end endbb builder
        
     | While (expr,stmt) -> raise TODO
