@@ -120,20 +120,19 @@ let rec gen_statement (f:Llvm.llvalue) (s:statement): unit  =
      List.iter (gen_statement f) statementlist;
      SymbolTableList.close_scope()
     | If (expr, stmt, stmtoption) ->
-       let l = Llvm.build_icmp (Icmp.Ne) (gen_expression expr) (const_int 0) "icmp" builder in
+       let l = Llvm.build_icmp (Llvm.Icmp.Ne) (gen_expression expr) (const_int 0) "icmp" builder in
+       
        let tbb = Llvm.append_block context "then" f in
        let fbb = Llvm.append_block context "else" f in
-       let endbb = Llvm.append_block context "end" f in
-       Llvm.build_cond_br (l) tbb fbb builder;
-       label tbb;
-       gen_statement f stmt;
-       match stmtoption with
-       | None -> ()
-       | Some (s) -> gen_statement f s
+       let endbb = Llvm.append_block context "fi" f in
        
-(*       create label tbb
-	      gen_statement stmt
- *)
+       Llvm.build_cond_br (l) tbb fbb builder;
+       Llvm.position_at_end tbb builder;
+       gen_statement f stmt;
+       begin match stmtoption with 
+	     | None -> ()
+	     | Some (s) -> Llvm.position_at_end fbb builder;  gen_statement f s end;
+       Llvm.position_at_end endbb builder
        
     | While (expr,stmt) -> raise TODO
 				 

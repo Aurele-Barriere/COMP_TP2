@@ -1,0 +1,12 @@
+{
+INT i, j
+i := 0
+j := 2
+
+IF i
+THEN
+ j := 3
+ELSE 
+ j :=4
+FI
+}
