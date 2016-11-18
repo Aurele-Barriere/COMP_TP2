@@ -110,7 +110,9 @@ let rec gen_statement (f:Llvm.llvalue) (s:statement): unit  =
 			     | LHS_Ident (id) -> ignore (Llvm.build_store (gen_expression e) (SymbolTableList.lookup id) builder)
 			     | LHS_ArrayElem (id,expr) -> raise TODO
 		       end
-    | Return (expr) -> raise TODO
+    | Return (expr) ->
+       let l = gen_expression expr in
+       ignore (Llvm.build_ret l builder)
     | SCall (id, exprarray) -> raise TODO
     | Print (itemlist) -> raise TODO
     | Read (itemlist)  -> raise TODO
@@ -147,6 +149,6 @@ let gen (s : statement) : unit =
   SymbolTableList.open_scope();
   (* SymbolTableList.add "i" (create_entry_block_alloca the_function "i" int_type);*)
   gen_statement the_function s;
-  ignore(Llvm.build_ret (const_int 0) builder) (* returns 0 *)
+  (* ignore(Llvm.build_ret (const_int 0) builder) (* returns 0 *) *)
   (* let x = gen_statement s in
   ignore (Llvm.build_ret x builder) *) (* for expressions that returned llvalues *)
