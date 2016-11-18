@@ -1,0 +1,12 @@
+{
+INT i, j
+i := 10
+j := 2
+
+WHILE i
+DO {
+ j := 3
+  }
+DONE
+RETURN (j-1)
+}

@@ -138,8 +138,25 @@ let rec gen_statement (f:Llvm.llvalue) (s:statement): unit  =
        end;
        Llvm.position_at_end endbb builder
        
-    | While (expr,stmt) -> raise TODO
-				 
+    | While (expr,stmt) ->
+       let l = Llvm.build_icmp (Llvm.Icmp.Ne) (gen_expression expr) (const_int 0) "icmp" builder in
+
+       let loop  = Llvm.append_block context "loop" f in
+       let body  = Llvm.append_block context "body" f in
+       let after = Llvm.append_block context "after" f in
+
+       (* test to go in the body or after *)
+       Llvm.position_at_end loop builder;
+       Llvm.build_cond_br (l) loop after builder;
+
+       (* body of the while loop *)
+       Llvm.position_at_end body builder;
+       gen_statement f stmt;
+       ignore ( Llvm.build_br loop builder);
+
+       Llvm.position_at_end after builder
+
+	 
 
 (* function that turns the code generated for an expression into a valid LLVM code *)
 let gen (s : statement) : unit =

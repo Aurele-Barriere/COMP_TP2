@@ -10,5 +10,5 @@ THEN {
 ELSE 
  j :=4
 FI
-RETURN j
+RETURN (j-1)
 }
