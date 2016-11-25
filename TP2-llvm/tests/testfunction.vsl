@@ -1,0 +1,17 @@
+PROTO INT main()
+
+FUNC INT main()
+{
+INT i, j
+i := 0
+j := 2
+
+IF i
+THEN {
+ j := 3
+ RETURN j }
+ELSE 
+ j :=4
+FI
+RETURN (j-1)
+}

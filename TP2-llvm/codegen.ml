@@ -128,7 +128,7 @@ let rec gen_statement (f:Llvm.llvalue) (s:statement): unit  =
        let fbb = Llvm.append_block context "else" f in
        let endbb = Llvm.append_block context "fi" f in
        
-       Llvm.build_cond_br (l) tbb fbb builder;
+       ignore ( Llvm.build_cond_br (l) tbb fbb builder );
        Llvm.position_at_end tbb builder;
        gen_statement f stmt;
        ignore (Llvm.build_br endbb builder);
@@ -149,7 +149,7 @@ let rec gen_statement (f:Llvm.llvalue) (s:statement): unit  =
 
        (* test to go in the body or after *)
        Llvm.position_at_end loop builder;
-       Llvm.build_cond_br (l) loop after builder;
+       ignore ( Llvm.build_cond_br (l) body after builder );
 
        (* body of the while loop *)
        Llvm.position_at_end body builder;
@@ -158,7 +158,7 @@ let rec gen_statement (f:Llvm.llvalue) (s:statement): unit  =
 
        Llvm.position_at_end after builder
 
-let gen_proto (p:proto) : Llvm.llvalue =
+let gen_proto (p:proto) (is_def:bool) : Llvm.llvalue =
   match p with
   | (p_typ, p_ident, p_paramarray) ->
      let return_type = begin match p_typ with
@@ -167,28 +167,37 @@ let gen_proto (p:proto) : Llvm.llvalue =
 		       end in
      let arg_type = Array.make (Array.length p_paramarray) (int_type) in (* eventually, we should be able to have other types as arguments *)
      let fun_type = Llvm.function_type return_type arg_type in
-     begin match Llvm.lookup_function p_ident the_module with
-	   | None -> Llvm.declare_function p_ident fun_type the_module
+     let f = begin match Llvm.lookup_function p_ident the_module with
+	   | None -> Llvm.declare_function p_ident fun_type the_module 
 	   | Some f ->
-	      (* verification : no re-declarations *)
+	      (* verification : no re-definition *)
 	      if (Array.length (Llvm.basic_blocks f) != 0) then raise (Error "re-definition of function");
-	      if (Array.length (Llvm.params f) != Array.length p_paramarray) then raise (Error "redefinition with wrong number of arguments");
-	      f
-     end
-	      
-									     
-  
-			    
+	      if (Array.length (Llvm.params f) != Array.length p_paramarray) then raise (Error "redefinition with wrong number of arguments"); f
+     end in
+     if (is_def) then 
+	 Array.iteri  (fun i a -> let n = p_paramarray.(i) in
+				  Llvm.set_value_name n a;
+				  SymbolTableList.add n a)
+		      (Llvm.params f);
+     f
+       
+
 let gen_program_unit (u : program_unit) =
   match u with
-  | Proto(p) -> ignore(gen_proto p)
-  | Function(p,s) ->  gen_statement (gen_proto p) s
+  | Proto(p) -> ignore(gen_proto p false)
+  | Function(p,s) -> SymbolTableList.open_scope();
+		     let f = gen_proto p true in
+		     let entrybb = Llvm.append_block context "entry" f in
+		     Llvm.position_at_end entrybb builder;
+		     gen_statement f s ;
+		     (* return *)
+		     SymbolTableList.close_scope()
 
 let rec gen_program (p : program) =
   List.iter (gen_program_unit) p
 
 (* function that turns the code generated for an expression into a valid LLVM code *)
-let gen (s : statement) : unit =
+(*let gen (s : statement) : unit =
   let the_function = Llvm.declare_function "main" (Llvm.function_type int_type [||]) the_module in
   let bb = Llvm.append_block context "entry" the_function in
   Llvm.position_at_end bb builder;
@@ -198,3 +207,6 @@ let gen (s : statement) : unit =
   (* ignore(Llvm.build_ret (const_int 0) builder) (* returns 0 *) *)
   (* let x = gen_statement s in
   ignore (Llvm.build_ret x builder) *) (* for expressions that returned llvalues *)
+ *)
+let gen (p : program) = gen_program p
+				    

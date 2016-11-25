@@ -1,0 +1,32 @@
+PROTO INT fact(k)
+
+FUNC VOID main()
+{
+  INT n, i
+  n := 10
+  i := 0
+  WHILE n-i
+  DO
+	{
+	i := i+1
+	}
+  DONE
+  i := 0
+  WHILE n-i
+  DO
+  {
+	i := i+1
+  }
+  DONE
+}
+
+FUNC INT fact(n)
+{
+  IF n
+  THEN
+    RETURN n 
+  ELSE
+    RETURN 1
+  FI
+  RETURN 0
+}
