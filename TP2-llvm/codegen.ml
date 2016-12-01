@@ -88,7 +88,7 @@ let rec gen_expression : expression -> Llvm.llvalue = function
      let t1 = gen_expression e1 in
      let t2 = gen_expression e2 in
      Llvm.build_sdiv t1 t2 "div" builder
-  | Expr_Ident(id) ->  SymbolTableList.lookup id
+  | Expr_Ident(id) ->  Llvm.build_load (SymbolTableList.lookup id) (id^"_loaded") builder
   | ArrayElem (id,e) -> raise TODO
   | ECall (id,array) -> let fn = SymbolTableList.lookup id in
 			let args = Array.map (gen_expression) array in
@@ -112,7 +112,7 @@ let rec gen_statement (f:Llvm.llvalue) (s:statement) (ret:Llvm.llvalue option): 
 		       end
     | Return (expr) ->
        begin match ret with
-	     | None -> 	failwith "tried to return in a void function"
+	     | None -> 	raise (Error "tried to return in a void function")
 	     | Some(r) -> 
 		let l = gen_expression expr in
 		(* store dans le registre return *)
@@ -184,17 +184,8 @@ let gen_proto (p:proto) (is_def:bool) : Llvm.llvalue =
 	      (* verification : no re-definition *)
 	      if (Array.length (Llvm.basic_blocks f) != 0) then raise (Error "re-definition of function");
 	      if (Array.length (Llvm.params f) != Array.length p_paramarray) then raise (Error "redefinition with wrong number of arguments"); f
-     end in
-     if (is_def) then 
-	 Array.iteri  (fun i a -> let n = p_paramarray.(i) in
-				  Llvm.set_value_name n a;
-				  SymbolTableList.add n a)
-		      (Llvm.params f);
-     f
-       
+     end in f       
 
-(* on peut pas faire le zsymboltablelist.add : ce n'est pas un pointeur.
-pour corriger ca, on créera une variable dans laquelle on store la valeur du paramètre, qu'on ajoute dans la table *)
        
 let gen_program_unit (u : program_unit) =
   match u with
@@ -203,6 +194,16 @@ let gen_program_unit (u : program_unit) =
 		     let f = gen_proto p true in
 		     let entrybb = Llvm.append_block context "entry" f in
 		     Llvm.position_at_end entrybb builder;
+		     let paramarray = begin match p with (_,_,a) -> a end in
+		     (* copying parameters *)
+		     Array.iteri  (fun i a -> let n = paramarray.(i) in
+					      Llvm.set_value_name n a;
+					      (* allocate mirror variable *)
+					      let mirror = create_entry_block_alloca f (n^"_mirror") int_type in
+					      (* store parameter value in mirror variable *)
+					      SymbolTableList.add n mirror;
+					      ignore(Llvm.build_store a mirror builder))
+				  (Llvm.params f);
 		     (* creating return register *)
 		     begin match p with
 			   |(p_typ, _, _) ->
