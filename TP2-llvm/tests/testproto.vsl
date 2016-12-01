@@ -23,8 +23,10 @@ FUNC VOID main()
 FUNC INT fact(n)
 {
   IF n
-  THEN
-    RETURN n 
+  THEN {
+    n := n+1
+    RETURN n
+  }	 
   ELSE
     RETURN 1
   FI

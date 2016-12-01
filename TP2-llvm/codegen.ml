@@ -104,44 +104,48 @@ let rec gen_decl decl f: unit =
   | [] -> ()
   | di :: decl' -> gen_decl_item di f; gen_decl decl' f
 					
-let rec gen_statement (f:Llvm.llvalue) (s:statement): unit  = 
+let rec gen_statement (f:Llvm.llvalue) (s:statement) (ret:Llvm.llvalue option): unit  = 
     match s with 
     | Assign (l,e) ->  begin match l with	      
 			     | LHS_Ident (id) -> ignore (Llvm.build_store (gen_expression e) (SymbolTableList.lookup id) builder)
 			     | LHS_ArrayElem (id,expr) -> raise TODO
 		       end
     | Return (expr) ->
-       let l = gen_expression expr in
-       (* store dans le registre return *)
-       ignore (Llvm.build_ret l builder)
+       begin match ret with
+	     | None -> 	failwith "tried to return in a void function"
+	     | Some(r) -> 
+		let l = gen_expression expr in
+		(* store dans le registre return *)
+		ignore (Llvm.build_store l r builder)
+       end
     | SCall (id, exprarray) -> raise TODO
     | Print (itemlist) -> raise TODO
     | Read (itemlist)  -> raise TODO
     | Block (decl, statementlist) ->
      SymbolTableList.open_scope();
      gen_decl decl f;
-     List.iter (gen_statement f) statementlist;
+     List.iter (fun s -> gen_statement f s ret) statementlist;
      SymbolTableList.close_scope()
     | If (expr, stmt, stmtoption) ->
        let l = Llvm.build_icmp (Llvm.Icmp.Ne) (gen_expression expr) (const_int 0) "icmp" builder in
        begin match stmtoption with
 	     | None ->
-		       let tbb = Llvm.append_block context "then" f in
-		       let endbb = Llvm.append_block context "fi" f in
-		       ignore ( Llvm.build_cond_br (l) tbb endbb builder );
-		       Llvm.position_at_end tbb builder;
-		       gen_statement f stmt;
-		       ignore (Llvm.build_br endbb builder);
-		       Llvm.position_at_end endbb builder
+		let tbb = Llvm.append_block context "then" f in
+		let endbb = Llvm.append_block context "fi" f in
+		ignore ( Llvm.build_cond_br (l) tbb endbb builder );
+		Llvm.position_at_end tbb builder;
+		gen_statement f stmt ret;
+		ignore (Llvm.build_br endbb builder);
+		Llvm.position_at_end endbb builder
 	     | Some s -> 
 		let tbb = Llvm.append_block context "then" f in
 		let fbb = Llvm.append_block context "else" f in
 		let endbb = Llvm.append_block context "fi" f in
 		ignore ( Llvm.build_cond_br (l) tbb fbb builder );
 		Llvm.position_at_end tbb builder;
-		gen_statement f stmt;
+		gen_statement f stmt ret;
 		ignore (Llvm.build_br endbb builder);
-		Llvm.position_at_end fbb builder;  gen_statement f s; ignore (Llvm.build_br endbb builder);
+		Llvm.position_at_end fbb builder;  gen_statement f s ret; ignore (Llvm.build_br endbb builder);
 		Llvm.position_at_end endbb builder
        end  
        
@@ -160,7 +164,7 @@ let rec gen_statement (f:Llvm.llvalue) (s:statement): unit  =
 
        (* body of the while loop *)
        Llvm.position_at_end body builder;
-       gen_statement f stmt;
+       gen_statement f stmt ret;
        ignore ( Llvm.build_br loop builder);
 
        Llvm.position_at_end after builder
@@ -189,16 +193,31 @@ let gen_proto (p:proto) (is_def:bool) : Llvm.llvalue =
      f
        
 
+(* on peut pas faire le zsymboltablelist.add : ce n'est pas un pointeur.
+pour corriger ca, on créera une variable dans laquelle on store la valeur du paramètre, qu'on ajoute dans la table *)
+       
 let gen_program_unit (u : program_unit) =
   match u with
   | Proto(p) -> ignore(gen_proto p false)
   | Function(p,s) -> SymbolTableList.open_scope();
-		     (* créer registre return *)
 		     let f = gen_proto p true in
 		     let entrybb = Llvm.append_block context "entry" f in
 		     Llvm.position_at_end entrybb builder;
-		     gen_statement f s ;
-		     (* return : build_ret du registre return ou return void*)
+		     (* creating return register *)
+		     begin match p with
+			   |(p_typ, _, _) ->
+			     begin match p_typ with
+				   | Type_Int ->
+				      let l = create_entry_block_alloca f "return" int_type in
+				      SymbolTableList.add "return" (l);
+				      gen_statement f s (Some l);
+				      let load = Llvm.build_load l "return_loaded" builder in
+				      ignore (Llvm.build_ret load builder)
+       				   | Type_Void ->
+				      gen_statement f s None;
+				      ignore(Llvm.build_ret_void builder);
+			     end
+		     end;
 		     SymbolTableList.close_scope()
 
 let rec gen_program (p : program) =
