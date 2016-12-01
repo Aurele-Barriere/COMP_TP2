@@ -90,9 +90,13 @@ let rec gen_expression : expression -> Llvm.llvalue = function
      Llvm.build_sdiv t1 t2 "div" builder
   | Expr_Ident(id) ->  Llvm.build_load (SymbolTableList.lookup id) (id^"_loaded") builder
   | ArrayElem (id,e) -> raise TODO
-  | ECall (id,array) -> let fn = SymbolTableList.lookup id in
+  | ECall (id,array) -> let fn = Llvm.lookup_function id the_module in
 			let args = Array.map (gen_expression) array in
-			Llvm.build_call fn args  id builder
+			begin match fn with
+			      | None -> raise (Error ("Unknown function "^id))
+			      | Some f -> Llvm.build_call f args "ecall" builder
+			end
+
 
 let gen_decl_item di the_function: unit =
   match di with
@@ -118,7 +122,7 @@ let rec gen_statement (f:Llvm.llvalue) (s:statement) (ret:Llvm.llvalue option): 
 		(* store dans le registre return *)
 		ignore (Llvm.build_store l r builder)
        end
-    | SCall (id, exprarray) -> raise TODO
+    | SCall (id, exprarray) -> raise (Error "coucou")
     | Print (itemlist) -> raise TODO
     | Read (itemlist)  -> raise TODO
     | Block (decl, statementlist) ->
