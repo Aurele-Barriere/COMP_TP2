@@ -122,7 +122,12 @@ let rec gen_statement (f:Llvm.llvalue) (s:statement) (ret:Llvm.llvalue option): 
 		(* store dans le registre return *)
 		ignore (Llvm.build_store l r builder)
        end
-    | SCall (id, exprarray) -> raise (Error "coucou")
+    | SCall (id, array) -> let fn = Llvm.lookup_function id the_module in
+			       let args = Array.map (gen_expression) array in
+			       begin match fn with
+				     | None -> raise (Error ("Unknown function "^id))
+				     | Some f -> ignore(Llvm.build_call f args "scall" builder) (* scall is never reused *)
+			       end
     | Print (itemlist) -> raise TODO
     | Read (itemlist)  -> raise TODO
     | Block (decl, statementlist) ->
