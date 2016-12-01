@@ -112,6 +112,7 @@ let rec gen_statement (f:Llvm.llvalue) (s:statement): unit  =
 		       end
     | Return (expr) ->
        let l = gen_expression expr in
+       (* store dans le registre return *)
        ignore (Llvm.build_ret l builder)
     | SCall (id, exprarray) -> raise TODO
     | Print (itemlist) -> raise TODO
@@ -123,20 +124,26 @@ let rec gen_statement (f:Llvm.llvalue) (s:statement): unit  =
      SymbolTableList.close_scope()
     | If (expr, stmt, stmtoption) ->
        let l = Llvm.build_icmp (Llvm.Icmp.Ne) (gen_expression expr) (const_int 0) "icmp" builder in
-       
-       let tbb = Llvm.append_block context "then" f in
-       let fbb = Llvm.append_block context "else" f in
-       let endbb = Llvm.append_block context "fi" f in
-       
-       ignore ( Llvm.build_cond_br (l) tbb fbb builder );
-       Llvm.position_at_end tbb builder;
-       gen_statement f stmt;
-       ignore (Llvm.build_br endbb builder);
-       begin match stmtoption with 
-	     | None -> ()
-	     | Some (s) -> Llvm.position_at_end fbb builder;  gen_statement f s; ignore (Llvm.build_br endbb builder);
-       end;
-       Llvm.position_at_end endbb builder
+       begin match stmtoption with
+	     | None ->
+		       let tbb = Llvm.append_block context "then" f in
+		       let endbb = Llvm.append_block context "fi" f in
+		       ignore ( Llvm.build_cond_br (l) tbb endbb builder );
+		       Llvm.position_at_end tbb builder;
+		       gen_statement f stmt;
+		       ignore (Llvm.build_br endbb builder);
+		       Llvm.position_at_end endbb builder
+	     | Some s -> 
+		let tbb = Llvm.append_block context "then" f in
+		let fbb = Llvm.append_block context "else" f in
+		let endbb = Llvm.append_block context "fi" f in
+		ignore ( Llvm.build_cond_br (l) tbb fbb builder );
+		Llvm.position_at_end tbb builder;
+		gen_statement f stmt;
+		ignore (Llvm.build_br endbb builder);
+		Llvm.position_at_end fbb builder;  gen_statement f s; ignore (Llvm.build_br endbb builder);
+		Llvm.position_at_end endbb builder
+       end  
        
     | While (expr,stmt) ->
        let l = Llvm.build_icmp (Llvm.Icmp.Ne) (gen_expression expr) (const_int 0) "icmp" builder in
@@ -186,11 +193,12 @@ let gen_program_unit (u : program_unit) =
   match u with
   | Proto(p) -> ignore(gen_proto p false)
   | Function(p,s) -> SymbolTableList.open_scope();
+		     (* créer registre return *)
 		     let f = gen_proto p true in
 		     let entrybb = Llvm.append_block context "entry" f in
 		     Llvm.position_at_end entrybb builder;
 		     gen_statement f s ;
-		     (* return *)
+		     (* return : build_ret du registre return ou return void*)
 		     SymbolTableList.close_scope()
 
 let rec gen_program (p : program) =
