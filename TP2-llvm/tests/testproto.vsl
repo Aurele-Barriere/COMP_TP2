@@ -24,7 +24,7 @@ FUNC INT fact(n)
 {
   IF n
   THEN {
-    n := n+1
+    fact(n)
     RETURN n
   }	 
   ELSE

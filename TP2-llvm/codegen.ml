@@ -96,8 +96,7 @@ let rec gen_expression : expression -> Llvm.llvalue = function
 			      | None -> raise (Error ("Unknown function "^id))
 			      | Some f -> Llvm.build_call f args "ecall" builder
 			end
-
-
+		
 let gen_decl_item di the_function: unit =
   match di with
   | Dec_Ident (id) -> SymbolTableList.add id (create_entry_block_alloca the_function id int_type);
@@ -128,7 +127,16 @@ let rec gen_statement (f:Llvm.llvalue) (s:statement) (ret:Llvm.llvalue option): 
 				     | None -> raise (Error ("Unknown function "^id))
 				     | Some f -> ignore(Llvm.build_call f args "scall" builder) (* scall is never reused *)
 			       end
-    | Print (itemlist) -> raise TODO
+    | Print (itemlist) ->
+       List.iter
+	 ( fun i -> let args =
+		      begin match i with
+			    | Print_Expr e -> [|const_string "%d"; (gen_expression e)|]
+			    | Print_Text s -> Array.make 1 (const_string s)
+		      end in
+		    ignore (Llvm.build_call func_printf args "print" builder ) )
+	 itemlist
+	 
     | Read (itemlist)  -> raise TODO
     | Block (decl, statementlist) ->
      SymbolTableList.open_scope();
@@ -234,16 +242,5 @@ let rec gen_program (p : program) =
   List.iter (gen_program_unit) p
 
 (* function that turns the code generated for an expression into a valid LLVM code *)
-(*let gen (s : statement) : unit =
-  let the_function = Llvm.declare_function "main" (Llvm.function_type int_type [||]) the_module in
-  let bb = Llvm.append_block context "entry" the_function in
-  Llvm.position_at_end bb builder;
-  SymbolTableList.open_scope();
-  (* SymbolTableList.add "i" (create_entry_block_alloca the_function "i" int_type);*)
-  gen_statement the_function s;
-  (* ignore(Llvm.build_ret (const_int 0) builder) (* returns 0 *) *)
-  (* let x = gen_statement s in
-  ignore (Llvm.build_ret x builder) *) (* for expressions that returned llvalues *)
- *)
 let gen (p : program) = gen_program p
 				    

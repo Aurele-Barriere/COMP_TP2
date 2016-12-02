@@ -1,0 +1,7 @@
+FUNC VOID main () {
+
+    INT i
+    i := 0
+    PRINT "coucou\n", "hello\n", (i+1)
+
+}
