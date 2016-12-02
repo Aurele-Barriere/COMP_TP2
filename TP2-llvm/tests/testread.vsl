@@ -1,0 +1,7 @@
+FUNC VOID main () {
+
+    INT i
+    READ i
+    PRINT "coucou\n", "i=", i, "\n"
+
+}

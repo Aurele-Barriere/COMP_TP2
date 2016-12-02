@@ -137,7 +137,16 @@ let rec gen_statement (f:Llvm.llvalue) (s:statement) (ret:Llvm.llvalue option): 
 		    ignore (Llvm.build_call func_printf args "print" builder ) )
 	 itemlist
 	 
-    | Read (itemlist)  -> raise TODO
+    | Read (itemlist)  ->
+       List.iter
+	 ( fun i -> let args =
+		      begin match i with
+			    | LHS_Ident i -> [|const_string "%d"; (SymbolTableList.lookup i)|]
+			    | LHS_ArrayElem (i,e) -> raise TODO
+		      end in
+		    ignore (Llvm.build_call func_scanf args "read" builder ) )
+	 itemlist
+			   
     | Block (decl, statementlist) ->
      SymbolTableList.open_scope();
      gen_decl decl f;
