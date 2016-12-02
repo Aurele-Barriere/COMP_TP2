@@ -1,0 +1,7 @@
+*.bc
+*.ll
+*.o
+tests/testlevel1/*
+tests/testlevel2/*
+tests/testlevel3/*
+tests/testlevel4/*
