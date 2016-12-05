@@ -63,6 +63,24 @@ let create_entry_block_array_alloca the_function var_name typ size =
   let vsize = Llvm.const_int int_type size in
   Llvm.build_array_alloca typ vsize var_name builder
 
+
+let rec expression_type (e:expression) : SymbolTableList.symbType =
+  match e with
+  | Plus(e1,e2) | Minus(e1,e2) | Mul(e1,e2) | Div(e1,e2) ->
+      if (expression_type e1 = SymbolTableList.SymbArray ||
+	    expression_type e2 = SymbolTableList.SymbArray)
+      then
+	raise (Error "bad use of Array in expression")
+      else SymbolTableList.SymbInt
+  | Const(_) -> SymbolTableList.SymbInt
+  | Expr_Ident(i) -> SymbolTableList.lookup_type i
+  | ArrayElem(i,e) -> if (SymbolTableList.lookup_type i = SymbolTableList.SymbInt ||
+			    expression_type e = SymbolTableList.SymbArray)
+		      then raise (Error "bad types in Array element access")
+		      else SymbolTableList.SymbInt
+  | ECall(i,expr_array) -> SymbolTableList.SymbInt (* TODO : see if it's void *)
+
+			  
 (* generation of code for each VSL+ construct *)
 
 let rec gen_expression : expression -> Llvm.llvalue = function
