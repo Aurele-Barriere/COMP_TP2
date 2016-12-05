@@ -102,8 +102,8 @@ let rec gen_expression : expression -> Llvm.llvalue = function
 		
 let gen_decl_item di the_function: unit =
   match di with
-  | Dec_Ident (id) -> SymbolTableList.add id (create_entry_block_alloca the_function id int_type);
-  | Dec_Array (id, n) ->  SymbolTableList.add id (create_entry_block_array_alloca the_function id int_type n) 
+  | Dec_Ident (id) -> SymbolTableList.add id (create_entry_block_alloca the_function id int_type) SymbolTableList.SymbInt
+  | Dec_Array (id, n) ->  SymbolTableList.add id (create_entry_block_array_alloca the_function id int_type n) SymbolTableList.SymbArray
 					
 let rec gen_decl decl f: unit =
   match decl with
@@ -238,7 +238,7 @@ let gen_program_unit (u : program_unit) =
 					      (* allocate mirror variable *)
 					      let mirror = create_entry_block_alloca f (n^"_mirror") int_type in
 					      (* store parameter value in mirror variable *)
-					      SymbolTableList.add n mirror;
+					      SymbolTableList.add n mirror SymbolTableList.SymbInt;
 					      ignore(Llvm.build_store a mirror builder))
 				  (Llvm.params f);
 		     begin match p with
@@ -263,6 +263,5 @@ let gen (p : program) = gen_program p
 
 
 (* TODO :
-calling void function (see testlevel2/level2expr.vsl)
 invalid assign does not fail
  *)
