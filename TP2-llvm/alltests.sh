@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for f in tests/testlevel3/*.vsl
+for f in tests/*/*.vsl
 do
     printf "\n\n------------------------------------------------\n\n"
     echo $f
@@ -11,5 +11,5 @@ do
     ./$nf
 done
 
-# calling void function (see testlevel2/level2expr.vsl)
-
+yes | rm tests/*/*.o
+yes | rm tests/*.o

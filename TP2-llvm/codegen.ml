@@ -109,8 +109,10 @@ let rec gen_decl decl f: unit =
   match decl with
   | [] -> ()
   | di :: decl' -> gen_decl_item di f; gen_decl decl' f
-					
-let rec gen_statement (f:Llvm.llvalue) (s:statement) (ret:Llvm.llvalue option): unit  = 
+
+type ret_type = INT | VOID
+						
+let rec gen_statement (f:Llvm.llvalue) (s:statement) (ret:ret_type): unit  = 
     match s with 
     | Assign (l,e) ->  begin match l with	      
 			     | LHS_Ident (id) -> ignore (Llvm.build_store (gen_expression e) (SymbolTableList.lookup id) builder)
@@ -122,17 +124,14 @@ let rec gen_statement (f:Llvm.llvalue) (s:statement) (ret:Llvm.llvalue option): 
 		       end
     | Return (expr) ->
        begin match ret with
-	     | None -> 	raise (Error "tried to return in a void function")
-	     | Some(r) -> 
-		let l = gen_expression expr in
-		(* store dans le registre return *)
-		ignore (Llvm.build_store l r builder)
+	     | VOID -> ignore(Llvm.build_ret_void builder)
+	     | INT -> ignore(Llvm.build_ret (gen_expression expr) builder)
        end
     | SCall (id, array) -> let fn = Llvm.lookup_function id the_module in
 			       let args = Array.map (gen_expression) array in
 			       begin match fn with
 				     | None -> raise (Error ("Unknown function "^id))
-				     | Some f -> ignore(Llvm.build_call f args "scall" builder) (* scall is never reused *)
+				     | Some f -> ignore(Llvm.build_call f args "" builder) 
 			       end
     | Print (itemlist) ->
        List.iter
@@ -242,18 +241,14 @@ let gen_program_unit (u : program_unit) =
 					      SymbolTableList.add n mirror;
 					      ignore(Llvm.build_store a mirror builder))
 				  (Llvm.params f);
-		     (* creating return register *)
 		     begin match p with
 			   |(p_typ, _, _) ->
 			     begin match p_typ with
 				   | Type_Int ->
-				      let l = create_entry_block_alloca f "return" int_type in
-				      SymbolTableList.add "return" (l);
-				      gen_statement f s (Some l);
-				      let load = Llvm.build_load l "return_loaded" builder in
-				      ignore (Llvm.build_ret load builder)
+				      gen_statement f s INT;
+				      ignore (Llvm.build_ret (const_int 0) builder)
        				   | Type_Void ->
-				      gen_statement f s None;
+				      gen_statement f s VOID;
 				      ignore(Llvm.build_ret_void builder);
 			     end
 		     end;
@@ -268,6 +263,6 @@ let gen (p : program) = gen_program p
 
 
 (* TODO :
-return should break ?
 calling void function (see testlevel2/level2expr.vsl)
+invalid assign does not fail
  *)
