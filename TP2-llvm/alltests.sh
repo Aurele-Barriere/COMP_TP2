@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for f in tests/testlevel4/*.vsl
+for f in tests/testlevel2/*.vsl
 do
     printf "\n\n------------------------------------------------\n\n"
     echo $f

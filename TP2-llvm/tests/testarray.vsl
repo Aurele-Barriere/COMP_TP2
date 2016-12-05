@@ -1,0 +1,17 @@
+PROTO INT main()
+
+FUNC INT main()
+{
+INT i, j[10]
+i := 10
+
+WHILE i DO
+  {
+  i := i-1
+  j[i] := i
+  PRINT j[i], "\n"
+  }
+DONE
+
+RETURN 0
+}

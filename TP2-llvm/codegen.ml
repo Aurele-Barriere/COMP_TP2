@@ -89,7 +89,10 @@ let rec gen_expression : expression -> Llvm.llvalue = function
      let t2 = gen_expression e2 in
      Llvm.build_sdiv t1 t2 "div" builder
   | Expr_Ident(id) ->  Llvm.build_load (SymbolTableList.lookup id) (id^"_loaded") builder
-  | ArrayElem (id,e) -> raise TODO
+  | ArrayElem (id,e) -> let arrayptr = SymbolTableList.lookup id in
+			let index = Array.make 1 (gen_expression e) in
+			let elem_ptr = Llvm.build_gep arrayptr index "array_elem" builder in
+			Llvm.build_load elem_ptr id builder
   | ECall (id,array) -> let fn = Llvm.lookup_function id the_module in
 			let args = Array.map (gen_expression) array in
 			begin match fn with
@@ -100,7 +103,7 @@ let rec gen_expression : expression -> Llvm.llvalue = function
 let gen_decl_item di the_function: unit =
   match di with
   | Dec_Ident (id) -> SymbolTableList.add id (create_entry_block_alloca the_function id int_type);
-  | Dec_Array (id, n) -> raise TODO
+  | Dec_Array (id, n) ->  SymbolTableList.add id (create_entry_block_array_alloca the_function id int_type n) 
 					
 let rec gen_decl decl f: unit =
   match decl with
@@ -111,7 +114,11 @@ let rec gen_statement (f:Llvm.llvalue) (s:statement) (ret:Llvm.llvalue option): 
     match s with 
     | Assign (l,e) ->  begin match l with	      
 			     | LHS_Ident (id) -> ignore (Llvm.build_store (gen_expression e) (SymbolTableList.lookup id) builder)
-			     | LHS_ArrayElem (id,expr) -> raise TODO
+			     | LHS_ArrayElem (id,expr) -> 
+				let array_ptr = SymbolTableList.lookup id in
+				let index = Array.make 1 (gen_expression expr) in
+				let array_elem_ptr = Llvm.build_gep array_ptr index "array_elem" builder in
+				ignore (Llvm.build_store (gen_expression e) array_elem_ptr builder) 
 		       end
     | Return (expr) ->
        begin match ret with
@@ -142,7 +149,12 @@ let rec gen_statement (f:Llvm.llvalue) (s:statement) (ret:Llvm.llvalue option): 
 	 ( fun i -> let args =
 		      begin match i with
 			    | LHS_Ident i -> [|const_string "%d"; (SymbolTableList.lookup i)|]
-			    | LHS_ArrayElem (i,e) -> raise TODO
+			    | LHS_ArrayElem (i,e) ->
+			       let array = SymbolTableList.lookup i in
+			       let index = gen_expression e in
+			       let elem_ptr = Llvm.build_gep array [|index|] i builder
+			       in
+			       [|const_string "%d"; elem_ptr|] 
 		      end in
 		    ignore (Llvm.build_call func_scanf args "read" builder ) )
 	 itemlist
@@ -176,8 +188,7 @@ let rec gen_statement (f:Llvm.llvalue) (s:statement) (ret:Llvm.llvalue option): 
        end  
        
     | While (expr,stmt) ->
-       let l = Llvm.build_icmp (Llvm.Icmp.Ne) (gen_expression expr) (const_int 0) "icmp" builder in
-
+       
        let loop  = Llvm.append_block context "loop" f in
        let body  = Llvm.append_block context "body" f in
        let after = Llvm.append_block context "after" f in
@@ -186,6 +197,7 @@ let rec gen_statement (f:Llvm.llvalue) (s:statement) (ret:Llvm.llvalue option): 
 
        (* test to go in the body or after *)
        Llvm.position_at_end loop builder;
+       let l = Llvm.build_icmp (Llvm.Icmp.Ne) (gen_expression expr) (const_int 0) "icmp" builder in
        ignore ( Llvm.build_cond_br (l) body after builder );
 
        (* body of the while loop *)
@@ -253,3 +265,9 @@ let rec gen_program (p : program) =
 (* function that turns the code generated for an expression into a valid LLVM code *)
 let gen (p : program) = gen_program p
 				    
+
+
+(* TODO :
+arrays
+return should break
+ *)
