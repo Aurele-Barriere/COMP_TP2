@@ -133,8 +133,14 @@ type ret_type = INT | VOID
 let rec gen_statement (f:Llvm.llvalue) (s:statement) (ret:ret_type): unit  = 
     match s with 
     | Assign (l,e) ->  begin match l with	      
-			     | LHS_Ident (id) -> ignore (Llvm.build_store (gen_expression e) (SymbolTableList.lookup id) builder)
-			     | LHS_ArrayElem (id,expr) -> 
+			     | LHS_Ident (id) ->
+				assert(expression_type (Expr_Ident id) = SymbolTableList.SymbInt);
+				assert(expression_type (e) = SymbolTableList.SymbInt);
+				ignore (Llvm.build_store (gen_expression e) (SymbolTableList.lookup id) builder)
+			     | LHS_ArrayElem (id,expr) ->
+				assert(expression_type (ArrayElem (id,expr)) = SymbolTableList.SymbInt);
+				assert(expression_type (expr) = SymbolTableList.SymbInt);
+
 				let array_ptr = SymbolTableList.lookup id in
 				let index = Array.make 1 (gen_expression expr) in
 				let array_elem_ptr = Llvm.build_gep array_ptr index "array_elem" builder in
@@ -143,7 +149,8 @@ let rec gen_statement (f:Llvm.llvalue) (s:statement) (ret:ret_type): unit  =
     | Return (expr) ->
        begin match ret with
 	     | VOID -> ignore(Llvm.build_ret_void builder)
-	     | INT -> ignore(Llvm.build_ret (gen_expression expr) builder)
+	     | INT -> assert (expression_type expr = SymbolTableList.SymbInt);
+		ignore(Llvm.build_ret (gen_expression expr) builder)
        end
     | SCall (id, array) -> let fn = Llvm.lookup_function id the_module in
 			       let args = Array.map (gen_expression) array in
@@ -182,6 +189,7 @@ let rec gen_statement (f:Llvm.llvalue) (s:statement) (ret:ret_type): unit  =
      List.iter (fun s -> gen_statement f s ret) statementlist;
      SymbolTableList.close_scope()
     | If (expr, stmt, stmtoption) ->
+       assert(expression_type expr = SymbolTableList.SymbInt);	      
        let l = Llvm.build_icmp (Llvm.Icmp.Ne) (gen_expression expr) (const_int 0) "icmp" builder in
        begin match stmtoption with
 	     | None ->
@@ -205,7 +213,7 @@ let rec gen_statement (f:Llvm.llvalue) (s:statement) (ret:ret_type): unit  =
        end  
        
     | While (expr,stmt) ->
-       
+       assert(expression_type expr = SymbolTableList.SymbInt);
        let loop  = Llvm.append_block context "loop" f in
        let body  = Llvm.append_block context "body" f in
        let after = Llvm.append_block context "after" f in
@@ -280,6 +288,3 @@ let gen (p : program) = gen_program p
 				    
 
 
-(* TODO :
-invalid assign does not fail
- *)
