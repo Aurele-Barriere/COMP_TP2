@@ -1,4 +1,9 @@
-\documentclass{article}
+\documentclass[french]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{babel}
+\usepackage{lmodern}
+
 
 \title{COMP : Compte rendu TP2}
 \author{Aurèle Barrière \& Antonin Garret}
@@ -9,28 +14,48 @@
 
 \maketitle
 
+\def\refneeded{\texttt{[ref needed]}}
+\def\iprint{\textsc{Print}}
+\def\iread{\textsc{Read}}
+
+
 \section{Introduction}
 %% une introduction où vous rappeler les objectifs du TP, avec vos propres mots,
+Ce projet vise à implémenter la face avant d'un compilateur de VSL \refneeded\ vers du code 3 adresses.
+Le but est d'arriver à traiter un langage avec des structures de contrôles, des boucles, des fonctions avec leur prototypes, des appels à des fonctions et des tableaux.
+
+Un parser était déjà fourni et nous a permis de nous concentrer uniquement sur la génération de code 3 adresses depuis un arbre de syntaxe abstrait.
+
 
 \section{Description de la méthodologie}
 %% une description de votre méthodologie de travail (partage des tâches, organisation du code, tests, etc.)
+Nous avons implémenté notre compilateur progressivement, de sorte à identifier plus simplement d'éventuelles ereurs. Dans un premier temps, nous ne nous sommes occupés que de la génération de code associcé aux expressions arithmétiques. Ensuite, celui du code des expressions et des blocs.
+
+Enfin, il nous a fallu implémenter la génération de code des fonctions et prototypes, puis celle des tableaux.
+
+À chaque étape, nous avons créé des programmes (ou des expressions, ou des instructions) pour tester notre génération. Dans un premier temps, ce code était comparé à celui des exemples dont nous disposions dans le sujet. Ensuite (quand les programmes et les instructions \iprint\ étaient traités), nous avons pu compiler le code 3 adresses en un code exécutable qui permettait de vérifier le comportement.
+
 
 \section{Bilan du travail réalisé}
 %% un bilan de ce qui a été réalisé (complètement/partiellement),
   \subsection{Génération du code d'expressions}
-
+%% une partie existait déjà
   \subsection{Génération du code d'instructions}
 
   \subsection{Génération du code de programmes}
-
+%% fonctions, prototypes
   \subsection{Vérification de type}
+  Enfin, nous avons implémenté un système de vérification de types pour éviter certaines erreurs. En effet, on ne veut pas qu'un programme puisse assigner un tableau à une valeur entière par exemple. Nous avons donc créé une fonction récursive de typage d'expression. Nous avons également dû augmenter le type de la table de symboles, pour qu'un enregistrement retienne aussi son type.
 
+  
 \section{Programme d'exemple}
 %% un programme VSL de votre cru couvrant toutes les fonctionalités couvertes par votre compilateur,
 
 
 \section{Tests effectués}
 %% un rapport des tests que vous avez effectués (voir fichiers VSL de test sur le share),
+Nous avons commencé par créer un script en \textsc{Bash} qui affichait les programmes de tests puis les compilait, puis les exécutait pour automatiser le lancement des tests.
+
 
 \section{Conclusion}
 %% une conclusion où vous discuterez des difficultés rencontrées, de ce  que vous avez appris, etc.
