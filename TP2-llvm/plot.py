@@ -15,7 +15,7 @@ with open('data') as f:
     for line in content:
         points = line.split()
         if (len(points) == 4):
-            draw.line((float(points[0]),float(points[1]),float(points[2]),float(points[3])), fill=(0,0,0,0),width=3)
+            draw.line((int(float(points[0])),int(float(points[1])),int(float(points[2])),int(float(points[3]))), fill=(0,0,0,0),width=3)
 
     plt.imshow(im)
     plt.show()

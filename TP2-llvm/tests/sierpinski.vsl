@@ -8,7 +8,7 @@ FUNC VOID main()
   x1 := 0
   y1 := 0
 
-  sierp(5,x1,y1,1000)
+  sierp(4,x1,y1,1000)
   
   RETURN 0
 }
@@ -26,13 +26,14 @@ FUNC VOID sierp(depth, x1, y1, length)
   IF depth
   THEN
   {
-  drawline(x1,y1,x1+length,y1)
-  drawline(x1+length,y1,x1+length,y1+length)
-  drawline(x1+length,y1+length,x1,y1+length)
-  drawline(x1,y1+length,x1,y1)
 
   third := length / 3
   twothird := (2 * length) / 3
+
+  drawline(x1+third,y1+third,x1+twothird,y1+third)
+  drawline(x1+twothird,y1+third,x1+twothird,y1+twothird)
+  drawline(x1+twothird,y1+twothird,x1+third,y1+twothird)
+  drawline(x1+third,y1+twothird,x1+third,y1+third)
 
   sierp(depth-1, x1, y1, third)
   sierp(depth-1, x1+third, y1, third)
