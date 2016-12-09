@@ -35,8 +35,8 @@ let create_pass_manager the_execution_engine =
 
 let main ch =
   (* initialization of LLVM *)
-  let the_execution_engine = create_execution_engine () in
-  let the_pm = create_pass_manager the_execution_engine in
+  (* let the_execution_engine = create_execution_engine () in
+  let the_pm = create_pass_manager the_execution_engine in *)
   (* parsing *)
   let ast = Parser.parse_channel Parser.program ch in 
   (* NOTE: replace Parser.expression by Parser.statement then by Parser.program according to your progression. *)
