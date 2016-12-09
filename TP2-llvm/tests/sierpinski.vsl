@@ -4,11 +4,13 @@ PROTO VOID sierp(depth, x1, y1, length)
 
 FUNC VOID main()
 {
-  INT x1, y1
-  x1 := 0
-  y1 := 0
+  INT args[4]
+  args[0] := 4
+  args[1] := 0
+  args[2] := 0
+  args[3] := 1000
 
-  sierp(4,x1,y1,1000)
+  sierp(args[0],args[1],args[2],args[3])
   
   RETURN 0
 }
