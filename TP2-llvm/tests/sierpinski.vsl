@@ -1,4 +1,4 @@
-PROTO VOID drawline(x1, y1, x2, y2)
+PROTO VOID drawsquare(x1, y1, length)
 
 PROTO VOID sierp(depth, x1, y1, length)
 
@@ -14,9 +14,9 @@ FUNC VOID main()
 }
 
 
-FUNC VOID drawline(x1, y1, x2, y2)
+FUNC VOID drawsquare(x1, y1, length)
 {
-  PRINT x1, " ", y1, " ", x2, " ", y2, "\n"
+  PRINT x1, " ", y1, " ", length, "\n"
 }
 
 FUNC VOID sierp(depth, x1, y1, length)
@@ -26,13 +26,10 @@ FUNC VOID sierp(depth, x1, y1, length)
   IF depth
   THEN
   {
-  drawline(x1,y1,x1+length,y1)
-  drawline(x1+length,y1,x1+length,y1+length)
-  drawline(x1+length,y1+length,x1,y1+length)
-  drawline(x1,y1+length,x1,y1)
-
   third := length / 3
   twothird := (2 * length) / 3
+
+  drawsquare(x1+third, y1+third, third)
 
   sierp(depth-1, x1, y1, third)
   sierp(depth-1, x1+third, y1, third)
