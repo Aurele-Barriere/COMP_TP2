@@ -1,0 +1,17 @@
+COMP TP2
+Aurèle Barrière & Antonin Garret
+
+You'll find our report in the rapport/ directory.
+
+To build our compiler, do
+   $ ./build.sh
+
+To use our compiler to 3-address code, do
+   $ ./main.native /path/to/test.vsl
+
+To use the compile to executable code, do
+   $ ./compile.sh /path/to/test/without/extansion
+
+To compile, run and draw our test example, do
+   $ ./sierpinski.sh
+
