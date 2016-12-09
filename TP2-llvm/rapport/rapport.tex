@@ -3,7 +3,8 @@
 \usepackage[T1]{fontenc}
 \usepackage{babel}
 \usepackage{lmodern}
-
+\usepackage{listings}
+\usepackage{graphicx}
 
 \title{COMP : Compte rendu TP2}
 \author{Aurèle Barrière \& Antonin Garret}
@@ -50,7 +51,24 @@ Enfin, il nous a fallu implémenter la génération de code des fonctions et pro
   
 \section{Programme d'exemple}
 %% un programme VSL de votre cru couvrant toutes les fonctionalités couvertes par votre compilateur,
+Nous avons implémenté un programme qui testait la plupart des fonctionnalités de notre compilateur, et tel qu'on puisse vérifier facilement la correction. Nous avons donc choisi un programme qui décrit la fractale du \textit{tapis de Sierpinski} \refneeded. Comme nous n'avions pas accès à des primitives de dessin, le programme se contente d'afficher dans la sortie standard (avec des \iprint) les coordonnées de chaque carré à colorier (un angle et une longueur). Un programme écrit en \textsc{Python} se charge ensuite de dessiner ces carrés.
 
+Le programme utilise des prototypes de fonctions, des fonctions avec arguments, des appels récursifs, des conditions \texttt{IF} sans \texttt{ELSE}, des expressions arithmétiques passées en paramètres de fonctions, des divisions et un retour dans une fonction de type \textsc{Void}.
+
+Le programme \textsc{VSL} :
+\lstinputlisting{../tests/sierpinski.vsl}
+
+
+Le programme \textsc{Python} chargé d'afficher le résultat :
+\lstinputlisting[language=Python]{../plot.py}
+
+Et le résultat :
+
+\begin{center}
+\includegraphics[width=8cm, height=8cm]{../sierpinski.png}
+\end{center}
+
+Nous avons également écrit un script qui compile notre programme, l'exécute en écrivant sa sortie dans un fichier, puis appelle le programme \textsc{Python} pour créer l'image.
 
 \section{Tests effectués}
 %% un rapport des tests que vous avez effectués (voir fichiers VSL de test sur le share),
