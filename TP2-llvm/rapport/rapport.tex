@@ -15,14 +15,13 @@
 
 \maketitle
 
-\def\refneeded{\texttt{[ref needed]}}
 \def\iprint{\textsc{Print}}
 \def\iread{\textsc{Read}}
 \def\return{\textsc{Return}}
 
 \section{Introduction}
 %% une introduction où vous rappeler les objectifs du TP, avec vos propres mots,
-Ce projet vise à implémenter la face avant d'un compilateur de VSL \refneeded\ vers du code 3 adresses.
+Ce projet vise à implémenter la face avant d'un compilateur de VSL  vers du code 3 adresses.
 Le but est d'arriver à traiter un langage avec des structures de contrôles, des boucles, des fonctions avec leur prototypes, des appels à des fonctions et des tableaux.
 
 Un parser était déjà fourni et nous a permis de nous concentrer uniquement sur la génération de code 3 adresses depuis un arbre de syntaxe abstrait.
@@ -56,7 +55,7 @@ Un programme complet est ensuite une simple liste de fonctions. il suffit donc d
   
 \section{Programme d'exemple}
 %% un programme VSL de votre cru couvrant toutes les fonctionalités couvertes par votre compilateur,
-Nous avons implémenté un programme qui testait la plupart des fonctionnalités de notre compilateur, et tel qu'on puisse vérifier facilement la correction. Nous avons donc choisi un programme qui décrit la fractale du \textit{tapis de Sierpinski} \refneeded. Comme nous n'avions pas accès à des primitives de dessin, le programme se contente d'afficher dans la sortie standard (avec des \iprint) les coordonnées de chaque carré à colorier (un sommet du carré et une longueur). Un programme écrit en \textsc{Python} se charge ensuite de dessiner ces carrés.
+Nous avons implémenté un programme qui testait la plupart des fonctionnalités de notre compilateur, et tel qu'on puisse vérifier facilement la correction. Nous avons donc choisi un programme qui décrit la fractale du \textit{tapis de Sierpinski}. Comme nous n'avions pas accès à des primitives de dessin, le programme se contente d'afficher dans la sortie standard (avec des \iprint) les coordonnées de chaque carré à colorier (un sommet du carré et une longueur). Un programme écrit en \textsc{Python} se charge ensuite de dessiner ces carrés.
 
 Le programme utilise des prototypes de fonctions, des fonctions avec arguments, des appels récursifs, des conditions \texttt{IF} sans \texttt{ELSE}, des expressions arithmétiques passées en paramètres de fonctions, des divisions, un tableau et un retour dans une fonction de type \textsc{Void}.
 
