@@ -63,7 +63,7 @@ let create_entry_block_array_alloca the_function var_name typ size =
   let vsize = Llvm.const_int int_type size in
   Llvm.build_array_alloca typ vsize var_name builder
 
-
+(* typing expressions to avoid wrong assignments *)
 let rec expression_type (e:expression) : SymbolTableList.symbType =
   match e with
   | Plus(e1,e2) | Minus(e1,e2) | Mul(e1,e2) | Div(e1,e2) ->
@@ -78,7 +78,7 @@ let rec expression_type (e:expression) : SymbolTableList.symbType =
 			    expression_type e = SymbolTableList.SymbArray)
 		      then raise (Error "bad types in Array element access")
 		      else SymbolTableList.SymbInt
-  | ECall(i,expr_array) -> SymbolTableList.SymbInt (* TODO : see if it's void *)
+  | ECall(i,expr_array) -> SymbolTableList.SymbInt (* a function cannot return an array *)
 
 			  
 (* generation of code for each VSL+ construct *)
@@ -117,7 +117,8 @@ let rec gen_expression : expression -> Llvm.llvalue = function
 			      | None -> raise (Error ("Unknown function "^id))
 			      | Some f -> Llvm.build_call f args "ecall" builder
 			end
-		
+
+(* declaration of an item *)
 let gen_decl_item di the_function: unit =
   match di with
   | Dec_Ident (id) -> SymbolTableList.add id (create_entry_block_alloca the_function id int_type) SymbolTableList.SymbInt
@@ -129,7 +130,9 @@ let rec gen_decl decl f: unit =
   | di :: decl' -> gen_decl_item di f; gen_decl decl' f
 
 type ret_type = INT | VOID
-						
+
+
+(* generated code for a statement *)
 let rec gen_statement (f:Llvm.llvalue) (s:statement) (ret:ret_type): unit  = 
     match s with 
     | Assign (l,e) ->  begin match l with	      
@@ -249,7 +252,8 @@ let gen_proto (p:proto) (is_def:bool) : Llvm.llvalue =
 	      if (Array.length (Llvm.params f) != Array.length p_paramarray) then raise (Error "redefinition with wrong number of arguments"); f
      end in f       
 
-       
+
+(* code generation for programs *)
 let gen_program_unit (u : program_unit) =
   match u with
   | Proto(p) -> ignore(gen_proto p false)
@@ -283,7 +287,7 @@ let gen_program_unit (u : program_unit) =
 let rec gen_program (p : program) =
   List.iter (gen_program_unit) p
 
-(* function that turns the code generated for an expression into a valid LLVM code *)
+(* function that turns the code generated for an program into a valid LLVM code *)
 let gen (p : program) = gen_program p
 				    
 
