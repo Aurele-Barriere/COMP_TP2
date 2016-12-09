@@ -1,5 +1,3 @@
-from PIL import Image
-from PIL import ImageDraw
 import numpy as np              
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
@@ -7,10 +5,7 @@ from matplotlib.patches import Rectangle
 
 with open('data') as f:
     content = f.readlines()
-
-    #im = Image.new('RGBA',(1000,1000),(255,255,255,255))
-    #draw = ImageDraw.Draw(im)
-    fig = plt.figure()
+    fig = plt.figure(figsize=(1,1))
     axis = plt.gca()
     axis.set_xlim([0,1000])
     axis.set_ylim([0,1000])
@@ -20,7 +15,6 @@ with open('data') as f:
             x = int(float(points[0]))
             y = int(float(points[1]))
             l = int(float(points[2]))
-            axis.add_patch(Rectangle((x,y),l,l,alpha=1))
-
-    #plt.imshow(im)
+            axis.add_patch(Rectangle((x,y),l,l,alpha=1,facecolor="#000000"))
     plt.show()
+    fig.savefig('sierpinski.png')

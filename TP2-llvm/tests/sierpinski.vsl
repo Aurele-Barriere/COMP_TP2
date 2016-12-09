@@ -8,7 +8,7 @@ FUNC VOID main()
   x1 := 0
   y1 := 0
 
-  sierp(5,x1,y1,1000)
+  sierp(4,x1,y1,1000)
   
   RETURN 0
 }
