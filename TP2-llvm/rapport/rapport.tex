@@ -30,7 +30,7 @@ Un parser était déjà fourni et nous a permis de nous concentrer uniquement su
 
 \section{Description de la méthodologie}
 %% une description de votre méthodologie de travail (partage des tâches, organisation du code, tests, etc.)
-Nous avons implémenté notre compilateur progressivement, de sorte à identifier plus simplement d'éventuelles ereurs. Dans un premier temps, nous ne nous sommes occupés que de la génération de code associcé aux expressions arithmétiques. Ensuite, celui du code des expressions et des blocs.
+Nous avons implémenté notre compilateur progressivement, de sorte à identifier plus simplement d'éventuelles ereurs. Dans un premier temps, nous ne nous sommes occupés que de la génération de code associé aux expressions arithmétiques. Ensuite, celui du code des expressions et des blocs.
 
 Enfin, il nous a fallu implémenter la génération de code des fonctions et prototypes, puis celle des tableaux.
 
@@ -51,7 +51,7 @@ Enfin, il nous a fallu implémenter la génération de code des fonctions et pro
   
 \section{Programme d'exemple}
 %% un programme VSL de votre cru couvrant toutes les fonctionalités couvertes par votre compilateur,
-Nous avons implémenté un programme qui testait la plupart des fonctionnalités de notre compilateur, et tel qu'on puisse vérifier facilement la correction. Nous avons donc choisi un programme qui décrit la fractale du \textit{tapis de Sierpinski} \refneeded. Comme nous n'avions pas accès à des primitives de dessin, le programme se contente d'afficher dans la sortie standard (avec des \iprint) les coordonnées de chaque carré à colorier (un angle et une longueur). Un programme écrit en \textsc{Python} se charge ensuite de dessiner ces carrés.
+Nous avons implémenté un programme qui testait la plupart des fonctionnalités de notre compilateur, et tel qu'on puisse vérifier facilement la correction. Nous avons donc choisi un programme qui décrit la fractale du \textit{tapis de Sierpinski} \refneeded. Comme nous n'avions pas accès à des primitives de dessin, le programme se contente d'afficher dans la sortie standard (avec des \iprint) les coordonnées de chaque carré à colorier (un angle du carré et une longueur). Un programme écrit en \textsc{Python} se charge ensuite de dessiner ces carrés.
 
 Le programme utilise des prototypes de fonctions, des fonctions avec arguments, des appels récursifs, des conditions \texttt{IF} sans \texttt{ELSE}, des expressions arithmétiques passées en paramètres de fonctions, des divisions et un retour dans une fonction de type \textsc{Void}.
 
@@ -65,10 +65,10 @@ Le programme \textsc{Python} chargé d'afficher le résultat :
 Et le résultat :
 
 \begin{center}
-\includegraphics[width=8cm, height=8cm]{../sierpinski.png}
+\includegraphics[width=10cm, height=10cm]{../sierpinski.png}
 \end{center}
 
-Nous avons également écrit un script qui compile notre programme, l'exécute en écrivant sa sortie dans un fichier, puis appelle le programme \textsc{Python} pour créer l'image.
+Nous avons également écrit un script qui compile notre programme, l'exécute en écrivant sa sortie dans un fichier, puis appelle le programme \textsc{Python} pour créer l'image. Pour simplifier le programme, les valeurs de rang maximal et de longueur du carré initial sont écrite directement dans le code. Si des petites irrégularités se distinguent dans la figure, elles s'expliquent par le fait que nos programmes n'utilisent que des variables entières et il y a donc quelques problèmes d'arrondi.
 
 \section{Tests effectués}
 %% un rapport des tests que vous avez effectués (voir fichiers VSL de test sur le share),
@@ -80,6 +80,13 @@ Ils nous ont également permis de soulever un problème de notre implémentation
 
 \section{Conclusion}
 %% une conclusion où vous discuterez des difficultés rencontrées, de ce  que vous avez appris, etc.
+Dans ce projet, nous avons appris à implémenter un générateur de code 3 adresses.
 
+Notre implémentation progressive et l'utilisation de nombreux programmes de tests nous ont permis de détecter le plus tôt possible nos erreurs.
 
+La possibilité de compiler nos programmes nous a donné une moyen efficace de vérifier chaque fonctionnalité de notre compilateur.
+
+Quelques problèmes se sont posés pendant notre implémentation : blocs vides en cas de \texttt{IF} sans \texttt{ELSE}, retour dans les fonctions de type \textsc{Void}, blocs vides en fin de fonction, mauvaise gestion des paramètres des fonctions (pour résoudre ce problème, nous avons créé pour chaque paramètre une variable locale dans laquelle on copiait sa valeur).
+
+Cependant, tous ces problèmes ayant étés corrigés, nous avons un compilateur qui produit du code se comportant comme attendu pour chaque problème de test correct, et qui ne compile pas pour chaque problème de test d'erreur.
 \end{document}
