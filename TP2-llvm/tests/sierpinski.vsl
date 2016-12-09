@@ -1,0 +1,48 @@
+PROTO VOID drawline(x1, y1, x2, y2)
+
+PROTO VOID sierp(depth, x1, y1, length)
+
+FUNC VOID main()
+{
+  INT x1, y1
+  x1 := 0
+  y1 := 0
+
+  sierp(3,x1,y1,1000)
+  
+  RETURN 0
+}
+
+
+FUNC VOID drawline(x1, y1, x2, y2)
+{
+  PRINT x1, " ", y1, " ", x2, " ", y2, "\n"
+}
+
+FUNC VOID sierp(depth, x1, y1, length)
+{
+  INT third, twothird
+
+  IF depth
+  THEN
+  {
+  drawline(x1,y1,x1+length,y1)
+  drawline(x1+length,y1,x1+length,y1+length)
+  drawline(x1+length,y1+length,x1,y1+length)
+  drawline(x1,y1+length,x1,y1)
+
+  third := length / 3
+  twothird := (2 * length) / 3
+
+  sierp(depth-1, x1, y1, third)
+  sierp(depth-1, x1+third, y1, third)
+  sierp(depth-1, x1+twothird, y1, third)
+  sierp(depth-1, x1, y1+third, third)
+
+  sierp(depth-1, x1+twothird, y1+third, third)
+  sierp(depth-1, x1, y1+twothird, third)
+  sierp(depth-1, x1+third, y1+twothird, third)
+  sierp(depth-1, x1+twothird, y1+twothird, third)
+  } 
+  FI
+}

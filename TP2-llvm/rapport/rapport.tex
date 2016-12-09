@@ -17,7 +17,7 @@
 \def\refneeded{\texttt{[ref needed]}}
 \def\iprint{\textsc{Print}}
 \def\iread{\textsc{Read}}
-
+\def\return{\textsc{Return}}
 
 \section{Introduction}
 %% une introduction où vous rappeler les objectifs du TP, avec vos propres mots,
@@ -56,6 +56,9 @@ Enfin, il nous a fallu implémenter la génération de code des fonctions et pro
 %% un rapport des tests que vous avez effectués (voir fichiers VSL de test sur le share),
 Nous avons commencé par créer un script en \textsc{Bash} qui affichait les programmes de tests puis les compilait, puis les exécutait pour automatiser le lancement des tests.
 
+Une fois que notre compilateur générait du code pour les programmes, nous avons pu lancer les tests fournis avec le sujet. Ceux-ci nous ont permis de vérifier que notre gestion des blocs, fonctions, prototypes, tableaux... était correcte.
+
+Ils nous ont également permis de soulever un problème de notre implémentation : les instructions \return\ dans les fonctions de type \textsc{Void}. Dans une première version, nous avions décidé que les programmes qui essayaient de retourner une valeur dans un programme de type \textsc{Void} n'étaient pas corrects et ne devaient pas être compilés. Cependant, de nombreux programmes de tests le faisaient, puisqu'il n'y pas d'instruction \return\ sans argument en VSL. Nous avons donc modifié notre compilateur pour qu'un tel appel crée une intruction \texttt{ret void} dans le code 3 adresses généré.
 
 \section{Conclusion}
 %% une conclusion où vous discuterez des difficultés rencontrées, de ce  que vous avez appris, etc.
